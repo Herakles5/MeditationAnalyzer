@@ -7,4 +7,5 @@ local.properties
 __pycache__/
 *.pyc
 *.class
+*.idsig
 /app/release/

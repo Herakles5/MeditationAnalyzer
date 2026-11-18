@@ -34,7 +34,7 @@ Das Mikrofon misst **akustische Modulationen** (Raumruhe, gleichmäßiges Atmen/
 ## Installation & Build
 
 - **Direkt auf Android installieren (QR-Code oder Link):**
-  - Direkter APK-Download: [`MeditationAnalyzer.apk`](https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/MeditationAnalyzer.apk)
+  - Direkter APK-Download: [`MeditationAnalyzer.apk`](https://github.com/Herakles5/MeditationAnalyzer/raw/main/MeditationAnalyzer.apk?v=1.1)
   - Oder QR-Code mit der Smartphone-Kamera scannen:
 
   ![Meditation Analyzer APK Download QR](./MeditationAnalyzer_QR.png)

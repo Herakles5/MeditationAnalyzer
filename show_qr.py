@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 if "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
 
-APK_URL = "https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/MeditationAnalyzer.apk"
+APK_URL = "https://github.com/Herakles5/MeditationAnalyzer/raw/main/MeditationAnalyzer.apk?v=1.1"
 HERE = os.path.dirname(os.path.abspath(__file__))
 QR_PATH = os.path.join(HERE, "MeditationAnalyzer_QR.png")
 
