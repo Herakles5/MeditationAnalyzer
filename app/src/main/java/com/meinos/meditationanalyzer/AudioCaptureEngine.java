@@ -278,6 +278,33 @@ public class AudioCaptureEngine {
         }
     }
 
+    @SuppressWarnings("deprecation")
+    public static AudioTrack createStreamAudioTrack(int sampleRate, int channelMask, int bufferBytes) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            return new AudioTrack.Builder()
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                            .build())
+                    .setAudioFormat(new AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(sampleRate)
+                            .setChannelMask(channelMask)
+                            .build())
+                    .setBufferSizeInBytes(bufferBytes)
+                    .setTransferMode(AudioTrack.MODE_STREAM)
+                    .build();
+        }
+        return new AudioTrack(
+                AudioManager.STREAM_MUSIC,
+                sampleRate,
+                channelMask,
+                AudioFormat.ENCODING_PCM_16BIT,
+                bufferBytes,
+                AudioTrack.MODE_STREAM
+        );
+    }
+
     public synchronized void startPlayback(PlaybackCallback pcb) {
         stopPlayback();
         final BufferSnapshot snap = getRecordingCopy();
@@ -295,19 +322,7 @@ public class AudioCaptureEngine {
                         AudioFormat.ENCODING_PCM_16BIT
                 );
                 int chunkLen = Math.max(512, snap.sampleRate / 25); // 40ms frames
-                track = new AudioTrack.Builder()
-                        .setAudioAttributes(new AudioAttributes.Builder()
-                                .setUsage(AudioAttributes.USAGE_MEDIA)
-                                .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                                .build())
-                        .setAudioFormat(new AudioFormat.Builder()
-                                .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                                .setSampleRate(snap.sampleRate)
-                                .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
-                                .build())
-                        .setBufferSizeInBytes(Math.max(minB, chunkLen * 4))
-                        .setTransferMode(AudioTrack.MODE_STREAM)
-                        .build();
+                track = createStreamAudioTrack(snap.sampleRate, AudioFormat.CHANNEL_OUT_MONO, Math.max(minB, chunkLen * 4));
                 track.play();
 
                 float totalSec = snap.length / (float) Math.max(1, snap.sampleRate);

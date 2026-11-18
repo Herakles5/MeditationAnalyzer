@@ -1,6 +1,5 @@
 package com.meinos.meditationanalyzer;
 
-import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioTrack;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -82,19 +81,7 @@ public class BinauralBeatGenerator {
 
         AudioTrack track = null;
         try {
-            track = new AudioTrack.Builder()
-                    .setAudioAttributes(new AudioAttributes.Builder()
-                            .setUsage(AudioAttributes.USAGE_MEDIA)
-                            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                            .build())
-                    .setAudioFormat(new AudioFormat.Builder()
-                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                            .setSampleRate(SAMPLE_RATE)
-                            .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
-                            .build())
-                    .setBufferSizeInBytes(trackBytes)
-                    .setTransferMode(AudioTrack.MODE_STREAM)
-                    .build();
+            track = AudioCaptureEngine.createStreamAudioTrack(SAMPLE_RATE, AudioFormat.CHANNEL_OUT_STEREO, trackBytes);
 
             track.play();
 

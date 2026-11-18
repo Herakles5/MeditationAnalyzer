@@ -7,7 +7,7 @@ from PIL import Image, ImageTk
 if "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
 
-APK_URL = "https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/MeditationAnalyzer_v1.2.apk"
+APK_URL = "https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/MeditationAnalyzer_v1.3.apk"
 HERE = os.path.dirname(os.path.abspath(__file__))
 QR_PATH = os.path.join(HERE, "MeditationAnalyzer_QR.png")
 
@@ -42,7 +42,7 @@ if os.path.exists(QR_PATH):
 
 tk.Label(
     root,
-    text=f"MeditationAnalyzer_v1.2.apk (v2-Signatur, ab Android 7):\n{APK_URL}",
+    text=f"MeditationAnalyzer_v1.3.apk (v1+v2 Signatur, ab Android 5.0):\n{APK_URL}",
     font=("Consolas", 8, "bold"),
     fg="#0044AA",
     bg="#FFFFFF",
