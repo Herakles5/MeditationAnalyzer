@@ -8,15 +8,15 @@ android {
 
     defaultConfig {
         applicationId "com.meinos.meditationanalyzer"
-        minSdk 23
+        minSdk 24
         targetSdk 34
-        versionCode 2
-        versionName "1.1"
+        versionCode 3
+        versionName "1.2"
     }
 
     signingConfigs {
         debug {
-            enableV1Signing = true
+            enableV1Signing = false
             enableV2Signing = true
             enableV3Signing = false
         }
