@@ -154,71 +154,79 @@ def append_log(msg: str):
 
 
 class ApkHandler(BaseHTTPRequestHandler):
+    protocol_version = "HTTP/1.1"
+
+    def _serve_apk(self, filepath: str, dl_name: str, ua: str, cip: str):
+        if not os.path.exists(filepath):
+            self.send_error(404)
+            return
+        size = os.path.getsize(filepath)
+        self.send_response(200)
+        self.send_header("Content-Type", "application/vnd.android.package-archive")
+        self.send_header("Content-Disposition", f'attachment; filename="{dl_name}"')
+        self.send_header("Content-Length", str(size))
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Connection", "close")
+        self.end_headers()
+        root.after(0, lambda: lbl_status.config(text=f"⏳ Sende {dl_name} an {cip}...", fg="#AA5500"))
+        sent = 0
+        try:
+            with open(filepath, "rb") as f:
+                while True:
+                    chunk = f.read(65536)
+                    if not chunk:
+                        break
+                    self.wfile.write(chunk)
+                    sent += len(chunk)
+        except Exception as exc:
+            append_log(f"ERR {cip} {self.path} sent={sent}/{size} err={exc} UA={ua}")
+            return
+        append_log(f"OK {cip} {self.path} sent={sent}/{size} UA={ua}")
+        root.after(0, lambda s=sent: lbl_status.config(
+            text=f"✓ Komplett gesendet: {s / (1024*1024):.2f} MB an {cip}",
+            fg="#007722",
+        ))
+
     def do_HEAD(self):
-        if os.path.exists(APK_PATH) and APK_NAME in self.path:
-            size = os.path.getsize(APK_PATH)
-            self.send_response(200)
-            self.send_header("Content-Type", "application/vnd.android.package-archive")
-            self.send_header("Content-Length", str(size))
-            self.end_headers()
-        else:
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            self.end_headers()
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Connection", "close")
+        self.end_headers()
 
     def do_GET(self):
         ua = self.headers.get("User-Agent", "-")
         cip = self.client_address[0]
         if self.path.startswith("/" + APK_NAME):
-            if not os.path.exists(APK_PATH):
-                self.send_error(404)
-                return
-            size = os.path.getsize(APK_PATH)
-            self.send_response(200)
-            self.send_header("Content-Type", "application/vnd.android.package-archive")
-            self.send_header("Content-Disposition", f'attachment; filename="{APK_NAME}"')
-            self.send_header("Content-Length", str(size))
-            self.send_header("Cache-Control", "no-store")
-            self.end_headers()
-            root.after(0, lambda: lbl_status.config(text=f"⏳ Sende {APK_NAME} an {cip}...", fg="#AA5500"))
-            sent = 0
-            try:
-                with open(APK_PATH, "rb") as f:
-                    while True:
-                        chunk = f.read(65536)
-                        if not chunk:
-                            break
-                        self.wfile.write(chunk)
-                        sent += len(chunk)
-            except Exception as exc:
-                append_log(f"ERR {cip} {self.path} sent={sent}/{size} err={exc} UA={ua}")
-                return
-            append_log(f"OK {cip} {self.path} sent={sent}/{size} UA={ua}")
-            root.after(0, lambda s=sent: lbl_status.config(
-                text=f"✓ Komplett gesendet: {s / (1024*1024):.2f} MB an {cip}",
-                fg="#007722",
-            ))
+            self._serve_apk(APK_PATH, APK_NAME, ua, cip)
+            return
+        if self.path.startswith("/HtcBinauralScope.apk"):
+            htc_path = "/root/coding/HtcBinauralScope-APK/HtcBinauralScope.apk"
+            self._serve_apk(htc_path, "HtcBinauralScope.apk", ua, cip)
             return
 
-        # Landing page with clear download button
+        # Landing page with clear download button + A/B test button
         size_mb = (os.path.getsize(APK_PATH) / (1024 * 1024)) if os.path.exists(APK_PATH) else 0.0
         html = f"""<!doctype html>
 <html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Meditation Analyzer APK Download</title>
 <style>
 body{{background:#080f18;color:#f8f8f2;font-family:sans-serif;text-align:center;padding:32px 16px}}
-a.btn{{display:inline-block;margin-top:24px;padding:18px 28px;background:#00ff88;color:#05080c;
-font-weight:bold;font-size:18px;border-radius:12px;text-decoration:none}}
+a.btn{{display:inline-block;margin-top:20px;padding:18px 26px;background:#00ff88;color:#05080c;
+font-weight:bold;font-size:17px;border-radius:12px;text-decoration:none}}
+a.btn2{{display:inline-block;margin-top:14px;padding:12px 18px;background:#1d2b3a;color:#8be9fd;
+font-size:13px;border-radius:8px;text-decoration:none}}
 .box{{background:#0d151c;padding:20px;border-radius:12px;max-width:420px;margin:0 auto}}
 </style></head><body><div class="box">
 <h2>🧘 Meditation Analyzer v1.4</h2>
-<p>Signierte APK ({size_mb:.2f} MB, Android 8+)</p>
-<a class="btn" href="/{APK_NAME}">⬇ {APK_NAME} herunterladen</a>
-<p style="font-size:12px;color:#90a4ae;margin-top:20px">Nach dem Download im Browser oder unter <b>Dateien → Downloads</b> zum Installieren antippen.</p>
+<p>Signierte APK ({size_mb:.2f} MB, Android 8–16)</p>
+<a class="btn" href="/{APK_NAME}">⬇ {APK_NAME} herunterladen</a><br>
+<a class="btn2" href="/HtcBinauralScope.apk">🧪 Gegentest: HtcBinauralScope.apk laden</a>
+<p style="font-size:12px;color:#ffb86c;margin-top:20px"><b>Tipp bei Firefox-Parse-Fehler:</b> Nicht auf „Öffnen“ in Firefox tippen, sondern in der Android-App <b>Dateien / Files → Downloads</b> antippen (oder Link in Chrome öffnen)!</p>
 </div></body></html>""".encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(html)))
+        self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(html)
         append_log(f"PAGE {cip} {self.path} UA={ua}")
