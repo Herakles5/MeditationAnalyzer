@@ -1,0 +1,549 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    android:keepScreenOn="true"
+    android:padding="6dp">
+
+    <!-- Top Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/card_bg"
+        android:padding="8dp"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🧘 MEDITATION ANALYZER"
+            android:textColor="@color/neon_cyan"
+            android:textSize="14sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvSessionTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="⏱ 00:00"
+            android:textColor="@color/accent_violet"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:layout_marginEnd="10dp" />
+
+        <TextView
+            android:id="@+id/tvStatusBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="● HANDY-MIC"
+            android:textColor="@color/neon_green"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- 3-in-1 Live Oszilloskop -->
+    <com.meinos.meditationanalyzer.OscilloscopeView
+        android:id="@+id/oscilloscopeView"
+        android:layout_width="match_parent"
+        android:layout_height="285dp"
+        android:layout_marginTop="4dp"
+        android:background="@color/screen_bg" />
+
+    <!-- HUD Metrics -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/card_bg"
+        android:padding="6dp">
+
+        <TextView
+            android:id="@+id/tvHudLeft"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CH1 [AUDIO]: 0.00V | Env: --- Hz"
+            android:textColor="@color/accent_alpha"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvHudRight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CH2 [MIC BRAIN]: -72.0 dBFS | θ/α(4-12Hz): -60.0 dB"
+            android:textColor="@color/neon_green"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <!-- Scrollable Controls -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginTop="4dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- CARD 1: Band, Display Mode & Gain -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/card_bg"
+                android:padding="8dp"
+                android:layout_marginBottom="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SPEKTRUM-BEREICH &amp; ANZEIGE"
+                    android:textColor="@color/neon_cyan"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/rgBandMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="2dp">
+
+                    <RadioButton
+                        android:id="@+id/rbBandBrain"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🧠 Brain 1-30Hz"
+                        android:textColor="@color/accent_violet"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/rbBandTinnitus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🔔 Tinnitus 2-16k"
+                        android:textColor="@color/accent_pink"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="6dp" />
+
+                    <RadioButton
+                        android:id="@+id/rbBandFull"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="📊 Full"
+                        android:textColor="@color/accent_alpha"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="6dp" />
+                </RadioGroup>
+
+                <RadioGroup
+                    android:id="@+id/rgDisplayMode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rbModeAll3"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Alle 3"
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/rbModeDual"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Wave+FFT"
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:layout_marginStart="8dp" />
+
+                    <RadioButton
+                        android:id="@+id/rbModeFft"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Spektrum"
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:layout_marginStart="8dp" />
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <TextView
+                        android:id="@+id/tvGainLabel"
+                        android:layout_width="76dp"
+                        android:layout_height="wrap_content"
+                        android:text="Gain: x2.0"
+                        android:textColor="@color/neon_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <SeekBar
+                        android:id="@+id/sbGain"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="18"
+                        android:progress="2" />
+
+                    <Button
+                        android:id="@+id/btnFreeze"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:text="⏸"
+                        android:textSize="11sp"
+                        android:backgroundTint="#1E3042"
+                        android:textColor="@color/text_white"
+                        android:paddingHorizontal="10dp" />
+
+                    <Button
+                        android:id="@+id/btnResetPeak"
+                        android:layout_width="wrap_content"
+                        android:layout_height="34dp"
+                        android:text="⟲ Peak"
+                        android:textSize="11sp"
+                        android:backgroundTint="#1F2937"
+                        android:textColor="@color/accent_yellow"
+                        android:layout_marginStart="4dp"
+                        android:paddingHorizontal="8dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- CARD 2: Binaural Meditation Beat Generator -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/card_bg"
+                android:padding="8dp"
+                android:layout_marginBottom="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎧 BINAURAL BEAT TRAINER (OHNE PC / KOPFHÖRER)"
+                    android:textColor="@color/accent_violet"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/rgBeatPreset"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="2dp">
+
+                    <RadioButton
+                        android:id="@+id/rbBeatDelta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="δ 2.5Hz"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp" />
+
+                    <RadioButton
+                        android:id="@+id/rbBeatTheta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="θ 6Hz"
+                        android:textColor="@color/accent_violet"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="4dp" />
+
+                    <RadioButton
+                        android:id="@+id/rbBeatSchumann"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="7.83Hz"
+                        android:textColor="@color/accent_pink"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:checked="true"
+                        android:layout_marginStart="4dp" />
+
+                    <RadioButton
+                        android:id="@+id/rbBeatAlpha"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="α 10Hz"
+                        android:textColor="@color/accent_alpha"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:layout_marginStart="4dp" />
+                </RadioGroup>
+
+                <RadioGroup
+                    android:id="@+id/rgCarrierFreq"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <RadioButton
+                        android:id="@+id/rbCarrier200"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Grundton 200 Hz (Sanft)"
+                        android:textColor="@color/text_white"
+                        android:textSize="11sp"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/rbCarrier136"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="136.1 Hz (OM/Erde)"
+                        android:textColor="@color/accent_orange"
+                        android:textSize="11sp"
+                        android:layout_marginStart="8dp" />
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="2dp">
+
+                    <TextView
+                        android:id="@+id/tvBeatVol"
+                        android:layout_width="64dp"
+                        android:layout_height="wrap_content"
+                        android:text="Vol: 25%"
+                        android:textColor="@color/text_muted"
+                        android:textSize="11sp" />
+
+                    <SeekBar
+                        android:id="@+id/sbBeatVol"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:max="80"
+                        android:progress="25" />
+
+                    <Button
+                        android:id="@+id/btnBeatToggle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
+                        android:text="🎧 BEAT STARTEN"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#322052"
+                        android:textColor="@color/accent_violet"
+                        android:paddingHorizontal="12dp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- CARD 3: Audio Input Source -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/card_bg"
+                android:padding="8dp"
+                android:layout_marginBottom="5dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="AUDIOQUELLE (RAUMRUHE / KONTROLLE)"
+                    android:textColor="@color/neon_green"
+                    android:textSize="11sp"
+                    android:textStyle="bold" />
+
+                <RadioGroup
+                    android:id="@+id/rgAudioSource"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <RadioButton
+                        android:id="@+id/rbSrcPhoneMic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎙️ Handy-Mic (44.1 kHz, lautlos im Raum)"
+                        android:textColor="@color/neon_green"
+                        android:textSize="11sp"
+                        android:checked="true" />
+
+                    <RadioButton
+                        android:id="@+id/rbSrcBtMic"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🎧 BT Headset Mic (HTC NE20 SCO)"
+                        android:textColor="@color/accent_orange"
+                        android:textSize="11sp" />
+
+                    <RadioButton
+                        android:id="@+id/rbSrcBeatMonitor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="🧪 Beat-Monitor (L+R Mix zur Sichtprüfung)"
+                        android:textColor="@color/accent_alpha"
+                        android:textSize="11sp" />
+                </RadioGroup>
+            </LinearLayout>
+
+            <!-- CARD 4: Compact Recorder (.tba / .cfs) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/card_bg"
+                android:padding="8dp"
+                android:layout_marginBottom="5dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="MIC RECORDER:"
+                        android:textColor="@color/neon_green"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <RadioGroup
+                        android:id="@+id/rgStorageFmt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginStart="8dp">
+
+                        <RadioButton
+                            android:id="@+id/rbFmtCfs"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CFS1 (.cfs)"
+                            android:textColor="@color/neon_cyan"
+                            android:textSize="11sp"
+                            android:checked="true" />
+
+                        <RadioButton
+                            android:id="@+id/rbFmtTba"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="TBA4 (.tba)"
+                            android:textColor="@color/accent_yellow"
+                            android:textSize="11sp"
+                            android:layout_marginStart="6dp" />
+                    </RadioGroup>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="4dp">
+
+                    <Button
+                        android:id="@+id/btnRec"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="⏺ REC"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#8B1E2B"
+                        android:textColor="@color/text_white" />
+
+                    <Button
+                        android:id="@+id/btnPlay"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="▶ PLAY"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#1B4D3E"
+                        android:textColor="@color/neon_green"
+                        android:layout_marginStart="4dp" />
+
+                    <Button
+                        android:id="@+id/btnLoad"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="📂 LOAD"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#1B334B"
+                        android:textColor="@color/accent_alpha"
+                        android:layout_marginStart="4dp" />
+
+                    <Button
+                        android:id="@+id/btnSave"
+                        android:layout_width="0dp"
+                        android:layout_height="38dp"
+                        android:layout_weight="1"
+                        android:text="💾 SAVE"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:backgroundTint="#2B2B44"
+                        android:textColor="@color/accent_yellow"
+                        android:layout_marginStart="4dp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvRecStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Bereit: Speichert lokal als .cfs / .tba (ADPCM + zlib)"
+                    android:textColor="@color/accent_alpha"
+                    android:textSize="10sp"
+                    android:layout_marginTop="4dp" />
+            </LinearLayout>
+
+            <!-- CARD 5: Meditation Reference & Screen Wake -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:background="@color/card_bg"
+                android:padding="8dp"
+                android:layout_marginBottom="6dp">
+
+                <CheckBox
+                    android:id="@+id/cbKeepScreenOn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Display während Meditation an lassen"
+                    android:textColor="@color/text_white"
+                    android:textSize="11sp"
+                    android:checked="true" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="• α Alpha (8–12 Hz): Entspannte Wachheit, geschlossene Augen\n• Schumann (7.83 Hz): Übergangszone für tiefe, gelöste Ruhe\n• θ Theta (4–8 Hz): Tiefe Meditation &amp; REM-nahe Entspannung\n• Mic-Ruhe (-50 bis -68 dBFS): Ruhiger Raum &amp; ruhiger Atem\nHinweis: Das Handy-Mikrofon misst akustische Modulationen (keine direkten EEG-Ströme); der Beat-Trainer stimuliert über Stereo-Kopfhörer."
+                    android:textColor="@color/text_muted"
+                    android:textSize="10sp"
+                    android:lineSpacingMultiplier="1.15" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
