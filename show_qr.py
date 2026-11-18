@@ -13,7 +13,7 @@ from PIL import Image, ImageTk
 if "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
 
-APK_NAME = "MeditationAnalyzer_v1.4.apk"
+APK_NAME = "MeditationAnalyzer_v2.0.apk"
 GITHUB_URL = f"https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/{APK_NAME}"
 HERE = os.path.dirname(os.path.abspath(__file__))
 APK_PATH = os.path.join(HERE, APK_NAME)
@@ -217,7 +217,7 @@ a.btn2{{display:inline-block;margin-top:14px;padding:12px 18px;background:#1d2b3
 font-size:13px;border-radius:8px;text-decoration:none}}
 .box{{background:#0d151c;padding:20px;border-radius:12px;max-width:420px;margin:0 auto}}
 </style></head><body><div class="box">
-<h2>🧘 Meditation Analyzer v1.4</h2>
+<h2>🧘 Meditation Analyzer v2.0 (Gradle 9 / SDK 36)</h2>
 <p>Signierte APK ({size_mb:.2f} MB, Android 8–16)</p>
 <a class="btn" href="/{APK_NAME}">⬇ {APK_NAME} herunterladen</a><br>
 <a class="btn2" href="/HtcBinauralScope.apk">🧪 Gegentest: HtcBinauralScope.apk laden</a>

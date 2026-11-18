@@ -4,28 +4,17 @@ plugins {
 
 android {
     namespace 'com.meinos.meditationanalyzer'
-    compileSdk 34
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.meinos.meditationanalyzer"
         minSdk 26
-        targetSdk 34
-        versionCode 5
-        versionName "1.4"
-    }
-
-    signingConfigs {
-        debug {
-            enableV1Signing = false
-            enableV2Signing = true
-            enableV3Signing = false
-        }
+        targetSdk 36
+        versionCode 6
+        versionName "2.0"
     }
 
     buildTypes {
-        debug {
-            signingConfig signingConfigs.debug
-        }
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
