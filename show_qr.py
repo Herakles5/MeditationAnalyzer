@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Zeigt einen klaren QR-Code für direkten Handy-Download (WLAN-LAN & GitHub)."""
+"""Zeigt einen klaren QR-Code für Handy-Download (WLAN-Webseite + GitHub)."""
 import os
 import socket
 import subprocess
 import tempfile
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -12,10 +13,12 @@ from PIL import Image, ImageTk
 if "DISPLAY" not in os.environ:
     os.environ["DISPLAY"] = ":0"
 
-GITHUB_URL = "https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/MeditationAnalyzer_v1.3.apk"
+APK_NAME = "MeditationAnalyzer_v1.4.apk"
+GITHUB_URL = f"https://raw.githubusercontent.com/Herakles5/MeditationAnalyzer/main/{APK_NAME}"
 HERE = os.path.dirname(os.path.abspath(__file__))
-APK_PATH = os.path.join(HERE, "MeditationAnalyzer_v1.3.apk")
+APK_PATH = os.path.join(HERE, APK_NAME)
 GITHUB_QR_PATH = os.path.join(HERE, "MeditationAnalyzer_QR.png")
+HTTP_LOG_PATH = "/tmp/med_qr_http.log"
 
 
 def detect_lan_ip() -> str:
@@ -31,17 +34,18 @@ def detect_lan_ip() -> str:
 
 LAN_IP = detect_lan_ip()
 PORT = 8888
-LAN_URL = f"http://{LAN_IP}:{PORT}/MeditationAnalyzer_v1.3.apk"
+LAN_PAGE_URL = f"http://{LAN_IP}:{PORT}/"
+LAN_APK_URL = f"http://{LAN_IP}:{PORT}/{APK_NAME}"
 
 root = tk.Tk()
-root.title("SCAN TO DOWNLOAD APK // Meditation Analyzer v1.3")
-root.geometry("520x640")
+root.title(f"SCAN TO DOWNLOAD APK // {APK_NAME}")
+root.geometry("520x660")
 root.configure(bg="#FFFFFF")
 root.attributes("-topmost", True)
 
 lbl_title = tk.Label(
     root,
-    text="📱 SCANNEN MIT HANDY-KAMERA / CHROME",
+    text="📱 SCANNEN MIT HANDY-KAMERA",
     font=("Arial", 13, "bold"),
     fg="#000000",
     bg="#FFFFFF",
@@ -50,8 +54,8 @@ lbl_title.pack(pady=(14, 4))
 
 lbl_sub = tk.Label(
     root,
-    text="WLAN-Direktdownload mit echtem Android-APK-Header",
-    font=("Arial", 10),
+    text="Öffnet Download-Seite im Browser (verhindert QR-Mini-Browser-Fehler)",
+    font=("Arial", 9),
     fg="#444444",
     bg="#FFFFFF",
 )
@@ -73,31 +77,31 @@ lbl_url.pack(pady=8)
 
 lbl_status = tk.Label(
     root,
-    text="Status: Warte auf Handy-Download...",
+    text="Status: Warte auf Handy-Verbindung...",
     font=("Arial", 9, "bold"),
     fg="#006633",
     bg="#FFFFFF",
+    wraplength=480,
 )
 lbl_status.pack(pady=(0, 8))
 
 mode = {"lan": LAN_IP != "127.0.0.1"}
 tmp_dir = tempfile.mkdtemp(prefix="med_qr_")
 LAN_QR_PATH = os.path.join(tmp_dir, "lan_qr.png")
-if os.path.exists(APK_PATH):
-    subprocess.run(["qrencode", "-s", "12", "-m", "4", "-l", "M", "-o", LAN_QR_PATH, LAN_URL], check=False)
+subprocess.run(["qrencode", "-s", "12", "-m", "4", "-l", "M", "-o", LAN_QR_PATH, LAN_PAGE_URL], check=False)
 
 
 def render_qr():
     use_lan = mode["lan"] and os.path.exists(LAN_QR_PATH)
     path = LAN_QR_PATH if use_lan else GITHUB_QR_PATH
-    url = LAN_URL if use_lan else GITHUB_URL
+    url = LAN_PAGE_URL if use_lan else GITHUB_URL
     sub = (
-        "WLAN-Direktdownload (Handy im selben WLAN, schnellster Weg)"
+        "WLAN-Downloadseite (Handy im selben WLAN — öffnet sauber im Browser)"
         if use_lan
-        else "GitHub Direktlink (funktioniert überall ohne PC)"
+        else "GitHub Direktlink (im Handy-Browser öffnen, funktioniert ohne PC)"
     )
     lbl_sub.config(text=sub)
-    lbl_url.config(text=f"MeditationAnalyzer_v1.3.apk:\n{url}")
+    lbl_url.config(text=f"{APK_NAME}:\n{url}")
     if os.path.exists(path):
         img = Image.open(path).convert("RGBA").resize((340, 340), Image.Resampling.NEAREST)
         photo = ImageTk.PhotoImage(img)
@@ -107,7 +111,7 @@ def render_qr():
 
 def toggle_mode():
     mode["lan"] = not mode["lan"]
-    btn_switch.config(text="Zu GitHub-QR wechseln" if mode["lan"] else "Zu WLAN-Direkt-QR wechseln")
+    btn_switch.config(text="Zu GitHub-QR wechseln" if mode["lan"] else "Zu WLAN-Browser-QR wechseln")
     render_qr()
 
 
@@ -116,7 +120,7 @@ f_btns.pack(pady=6)
 
 btn_switch = tk.Button(
     f_btns,
-    text="Zu GitHub-QR wechseln" if mode["lan"] else "Zu WLAN-Direkt-QR wechseln",
+    text="Zu GitHub-QR wechseln" if mode["lan"] else "Zu WLAN-Browser-QR wechseln",
     font=("Arial", 9, "bold"),
     bg="#E8F0FE",
     fg="#174EA6",
@@ -140,31 +144,85 @@ tk.Button(
 ).pack(side=tk.LEFT, padx=6)
 
 
+def append_log(msg: str):
+    ts = time.strftime("%H:%M:%S")
+    try:
+        with open(HTTP_LOG_PATH, "a", encoding="utf-8") as lf:
+            lf.write(f"[{ts}] {msg}\n")
+    except Exception:
+        pass
+
+
 class ApkHandler(BaseHTTPRequestHandler):
+    def do_HEAD(self):
+        if os.path.exists(APK_PATH) and APK_NAME in self.path:
+            size = os.path.getsize(APK_PATH)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/vnd.android.package-archive")
+            self.send_header("Content-Length", str(size))
+            self.end_headers()
+        else:
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.end_headers()
+
     def do_GET(self):
-        if not os.path.exists(APK_PATH):
-            self.send_error(404)
+        ua = self.headers.get("User-Agent", "-")
+        cip = self.client_address[0]
+        if self.path.startswith("/" + APK_NAME):
+            if not os.path.exists(APK_PATH):
+                self.send_error(404)
+                return
+            size = os.path.getsize(APK_PATH)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/vnd.android.package-archive")
+            self.send_header("Content-Disposition", f'attachment; filename="{APK_NAME}"')
+            self.send_header("Content-Length", str(size))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            root.after(0, lambda: lbl_status.config(text=f"⏳ Sende {APK_NAME} an {cip}...", fg="#AA5500"))
+            sent = 0
+            try:
+                with open(APK_PATH, "rb") as f:
+                    while True:
+                        chunk = f.read(65536)
+                        if not chunk:
+                            break
+                        self.wfile.write(chunk)
+                        sent += len(chunk)
+            except Exception as exc:
+                append_log(f"ERR {cip} {self.path} sent={sent}/{size} err={exc} UA={ua}")
+                return
+            append_log(f"OK {cip} {self.path} sent={sent}/{size} UA={ua}")
+            root.after(0, lambda s=sent: lbl_status.config(
+                text=f"✓ Komplett gesendet: {s / (1024*1024):.2f} MB an {cip}",
+                fg="#007722",
+            ))
             return
-        size = os.path.getsize(APK_PATH)
+
+        # Landing page with clear download button
+        size_mb = (os.path.getsize(APK_PATH) / (1024 * 1024)) if os.path.exists(APK_PATH) else 0.0
+        html = f"""<!doctype html>
+<html lang="de"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Meditation Analyzer APK Download</title>
+<style>
+body{{background:#080f18;color:#f8f8f2;font-family:sans-serif;text-align:center;padding:32px 16px}}
+a.btn{{display:inline-block;margin-top:24px;padding:18px 28px;background:#00ff88;color:#05080c;
+font-weight:bold;font-size:18px;border-radius:12px;text-decoration:none}}
+.box{{background:#0d151c;padding:20px;border-radius:12px;max-width:420px;margin:0 auto}}
+</style></head><body><div class="box">
+<h2>🧘 Meditation Analyzer v1.4</h2>
+<p>Signierte APK ({size_mb:.2f} MB, Android 8+)</p>
+<a class="btn" href="/{APK_NAME}">⬇ {APK_NAME} herunterladen</a>
+<p style="font-size:12px;color:#90a4ae;margin-top:20px">Nach dem Download im Browser oder unter <b>Dateien → Downloads</b> zum Installieren antippen.</p>
+</div></body></html>""".encode("utf-8")
         self.send_response(200)
-        self.send_header("Content-Type", "application/vnd.android.package-archive")
-        self.send_header("Content-Disposition", 'attachment; filename="MeditationAnalyzer_v1.3.apk"')
-        self.send_header("Content-Length", str(size))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(html)))
         self.end_headers()
-        root.after(0, lambda: lbl_status.config(text=f"⏳ Sende APK an {self.client_address[0]}...", fg="#AA5500"))
-        sent = 0
-        with open(APK_PATH, "rb") as f:
-            while True:
-                chunk = f.read(65536)
-                if not chunk:
-                    break
-                self.wfile.write(chunk)
-                sent += len(chunk)
-        root.after(0, lambda s=sent: lbl_status.config(
-            text=f"✓ Komplett übertragen: {s / (1024*1024):.2f} MB — Jetzt auf Handy tippen!",
-            fg="#007722",
-        ))
+        self.wfile.write(html)
+        append_log(f"PAGE {cip} {self.path} UA={ua}")
+        root.after(0, lambda: lbl_status.config(text=f"📱 Handy ({cip}) hat Download-Seite geöffnet...", fg="#174EA6"))
 
     def log_message(self, format, *args):
         pass
